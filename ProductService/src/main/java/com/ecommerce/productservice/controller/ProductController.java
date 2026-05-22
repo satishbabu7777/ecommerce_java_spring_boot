@@ -29,6 +29,11 @@ public class ProductController {
         return productService.updateProduct(id, product);
     }
 
+    @GetMapping("/get")
+    public Iterable<Product> getAllProducts() {
+        return productService.getAllProducts();
+    }
+
     // Delete Product
     @DeleteMapping("/{id}")
     public String deleteProduct(@PathVariable Long id) {

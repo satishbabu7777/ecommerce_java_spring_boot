@@ -31,6 +31,10 @@ public class ProductService {
         return productRepository.save(existing);
     }
 
+    public Iterable<Product> getAllProducts() {
+        return productRepository.findAll();
+    }
+
     public void deleteProduct(Long id) {
         productRepository.deleteById(id);
     }
