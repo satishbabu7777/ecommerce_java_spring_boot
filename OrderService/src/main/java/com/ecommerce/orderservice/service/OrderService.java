@@ -31,7 +31,8 @@ public class OrderService {
     public Order placeOrder(OrderRequest request) {
 
         // Validate User
-        UserDto user = userClient.getUser(request.getUserId());
+        UserDto user =
+                userClient.getUser(request.getUserId());
 
         if (user == null) {
             throw new RuntimeException("User not found");
@@ -45,20 +46,16 @@ public class OrderService {
             throw new RuntimeException("Product not found");
         }
 
-        // Check Quantity
+        // Check Stock
         if (product.getQuantity() < request.getQuantity()) {
             throw new RuntimeException("Insufficient stock");
         }
 
-        // Reduce Product Quantity
+        // Reduce Stock
         productClient.reduceStock(
                 request.getProductId(),
                 request.getQuantity()
         );
-
-        // Calculate Total Price
-        Double totalPrice =
-                product.getPrice() * request.getQuantity();
 
         // Create Order
         Order order = new Order();
@@ -66,11 +63,15 @@ public class OrderService {
         order.setUserId(request.getUserId());
         order.setProductId(request.getProductId());
         order.setQuantity(request.getQuantity());
-        order.setTotalPrice(totalPrice);
+
+        order.setTotalPrice(
+                product.getPrice() * request.getQuantity()
+        );
+
         order.setStatus("PLACED");
+
         order.setCreatedAt(LocalDateTime.now());
 
-        // Save Order
         return orderRepository.save(order);
     }
 }

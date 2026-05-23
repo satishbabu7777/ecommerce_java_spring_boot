@@ -10,42 +10,66 @@ import com.ecommerce.userservice.entity.User;
 import com.ecommerce.userservice.repository.UserRepository;
 import com.ecommerce.userservice.util.JwtUtil;
 
-import lombok.RequiredArgsConstructor;
-
 @Service
-@RequiredArgsConstructor
 public class AuthService {
 
     private final UserRepository repository;
     private final PasswordEncoder encoder;
     private final JwtUtil jwtUtil;
 
-    public String register(RegisterRequest request) {
+    public AuthService(
+            UserRepository repository,
+            PasswordEncoder encoder,
+            JwtUtil jwtUtil
+    ) {
+        this.repository = repository;
+        this.encoder = encoder;
+        this.jwtUtil = jwtUtil;
+    }
 
-        User user = User.builder()
-                .email(request.getEmail())
-                .password(encoder.encode(request.getPassword()))
-                .role("CUSTOMER")
-                .build();
+    public User register(RegisterRequest request) {
+
+        User user = new User();
+
+        user.setEmail(request.getEmail());
+
+        user.setPassword(
+                encoder.encode(request.getPassword())
+        );
+
+        user.setRole("CUSTOMER");
 
         repository.save(user);
 
-        return "User Registered Successfully";
+        return user;
     }
 
     public AuthResponse login(LoginRequest request) {
 
         User user = repository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() ->
+                        new RuntimeException("User not found"));
 
-        if (!encoder.matches(request.getPassword(), user.getPassword())) {
+        if (!encoder.matches(
+                request.getPassword(),
+                user.getPassword()
+        )) {
             throw new RuntimeException("Invalid Password");
         }
 
-        String token = jwtUtil.generateToken(user.getEmail());
+        String token =
+                jwtUtil.generateToken(user.getEmail());
 
-        return AuthResponse.builder()
-                .token(token)
-                .build();
+        AuthResponse response = new AuthResponse();
+
+        response.setToken(token);
+
+        return response;
+    }
+
+    public User getUserById(Long id) {
+        return repository.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException("User not found"));
     }
 }

@@ -1,18 +1,32 @@
-spring:
-  datasource:
-    url: jdbc:h2:mem:testdb
-    driverClassName: org.h2.Driver
-    username: sa
-    password:
+server:
+  port: 8081
 
-  h2:
-    console:
-      enabled: true
+spring:
+  application:
+    name: USER-SERVICE
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/userdb
+    username: satish
+    password: password
 
   jpa:
     hibernate:
       ddl-auto: update
+    show-sql: true
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+
+  swagger-ui:
+    path: /swagger-ui.html    
 
 jwt:
   secret: mySecretKeymySecretKeymySecretKey123456
-  expiration: 3600000
+  expiration: 86400000   

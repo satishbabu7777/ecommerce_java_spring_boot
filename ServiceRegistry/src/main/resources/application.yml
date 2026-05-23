@@ -1,18 +1,11 @@
+server:
+  port: 8761
+
 spring:
-  datasource:
-    url: jdbc:h2:mem:testdb
-    driverClassName: org.h2.Driver
-    username: sa
-    password:
+  application:
+    name: SERVICE-REGISTRY
 
-  h2:
-    console:
-      enabled: true
-
-  jpa:
-    hibernate:
-      ddl-auto: update
-
-jwt:
-  secret: mySecretKeymySecretKeymySecretKey123456
-  expiration: 3600000
+eureka:
+  client:
+    register-with-eureka: false
+    fetch-registry: false
