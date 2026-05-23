@@ -3,43 +3,56 @@ package com.ecommerce.productservice.controller;
 import org.springframework.web.bind.annotation.*;
 
 import com.ecommerce.productservice.entity.Product;
-import com.ecommerce.productservice.service.ProductService;
+import com.ecommerce.productservice.repository.ProductRepository;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/products")
 public class ProductController {
 
-    private final ProductService productService;
+    private final ProductRepository repository;
 
-    // Constructor Injection
-    public ProductController(ProductService productService) {
-        this.productService = productService;
+    public ProductController(ProductRepository repository) {
+        this.repository = repository;
     }
 
-    // Add Product
     @PostMapping
-    public Product addProduct(@RequestBody Product product) {
-        return productService.addProduct(product);
+    public Product createProduct(@RequestBody Product product) {
+        return repository.save(product);
     }
 
-    // Update Product
-    @PutMapping("/{id}")
-    public Product updateProduct(@PathVariable Long id,
-                                 @RequestBody Product product) {
-        return productService.updateProduct(id, product);
+    @GetMapping
+    public List<Product> getAllProducts() {
+        return repository.findAll();
     }
 
-    @GetMapping("/get")
-    public Iterable<Product> getAllProducts() {
-        return productService.getAllProducts();
+    @GetMapping("/{id}")
+    public Product getProductById(@PathVariable Long id) {
+
+        return repository.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException("Product not found"));
     }
 
-    // Delete Product
-    @DeleteMapping("/{id}")
-    public String deleteProduct(@PathVariable Long id) {
+    @PutMapping("/reduce-stock/{id}")
+    public String reduceStock(
+            @PathVariable Long id,
+            @RequestParam Integer quantity
+    ) {
 
-        productService.deleteProduct(id);
+        Product product = repository.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException("Product not found"));
 
-        return "Product deleted successfully";
+        if(product.getQuantity() < quantity) {
+            throw new RuntimeException("Insufficient stock");
+        }
+
+        product.setQuantity(product.getQuantity() - quantity);
+
+        repository.save(product);
+
+        return "Stock Updated";
     }
 }
