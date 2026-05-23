@@ -1,24 +1,29 @@
 package com.ecommerce.paymentservice.service;
 
-import com.ecommerce.paymentservice.entity.Payment;
-import com.ecommerce.paymentservice.repository.PaymentRepository;
-import lombok.RequiredArgsConstructor;
+import com.razorpay.Order;
+import com.razorpay.RazorpayClient;
+import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
 @Service
-@RequiredArgsConstructor
 public class PaymentService {
 
-    private final PaymentRepository paymentRepository;
+    private final RazorpayClient razorpayClient;
 
-    public Payment savePayment(Payment payment) {
-        payment.setStatus("SUCCESS");
-        return paymentRepository.save(payment);
+    public PaymentService() throws Exception {
+        this.razorpayClient = new RazorpayClient("rzp*********", "your_secret_key");
     }
 
-    public List<Payment> getAllPayments() {
-        return paymentRepository.findAll();
+    public String createOrder(Double amount) throws Exception {
+
+        JSONObject options = new JSONObject();
+
+        options.put("amount", amount * 100);
+        options.put("currency", "INR");
+        options.put("receipt", "txn_123456");
+
+        Order order = razorpayClient.orders.create(options);
+
+        return order.toString();
     }
 }
