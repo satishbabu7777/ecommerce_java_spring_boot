@@ -15,7 +15,6 @@ public class PaymentController {
 
     @PostMapping("/create-order")
     public String createOrder(@RequestParam Double amount) throws Exception {
-
         return paymentService.createOrder(amount);
     }
 }

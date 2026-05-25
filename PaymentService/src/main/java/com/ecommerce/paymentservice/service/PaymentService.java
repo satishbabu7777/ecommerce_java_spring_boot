@@ -11,7 +11,7 @@ public class PaymentService {
     private final RazorpayClient razorpayClient;
 
     public PaymentService() throws Exception {
-        this.razorpayClient = new RazorpayClient("rzp*********", "your_secret_key");
+        this.razorpayClient = new RazorpayClient("*****", "****");
     }
 
     public String createOrder(Double amount) throws Exception {
