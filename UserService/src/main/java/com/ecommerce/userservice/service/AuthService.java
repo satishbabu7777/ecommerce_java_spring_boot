@@ -1,5 +1,7 @@
 package com.ecommerce.userservice.service;
 
+import java.util.Optional;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -8,68 +10,77 @@ import com.ecommerce.userservice.dto.LoginRequest;
 import com.ecommerce.userservice.dto.RegisterRequest;
 import com.ecommerce.userservice.entity.User;
 import com.ecommerce.userservice.repository.UserRepository;
-import com.ecommerce.userservice.util.JwtUtil;
 
 @Service
 public class AuthService {
 
-    private final UserRepository repository;
-    private final PasswordEncoder encoder;
-    private final JwtUtil jwtUtil;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
     public AuthService(
-            UserRepository repository,
-            PasswordEncoder encoder,
-            JwtUtil jwtUtil
+            UserRepository userRepository,
+            PasswordEncoder passwordEncoder,
+            JwtService jwtService
     ) {
-        this.repository = repository;
-        this.encoder = encoder;
-        this.jwtUtil = jwtUtil;
+
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
     }
 
     public User register(RegisterRequest request) {
 
+        Optional<User> existingUser =
+                userRepository.findByEmail(request.getEmail());
+
+        if (existingUser.isPresent()) {
+            throw new RuntimeException("Email already exists");
+        }
+
         User user = new User();
 
+        user.setName(request.getName());
         user.setEmail(request.getEmail());
 
+        // encode password
         user.setPassword(
-                encoder.encode(request.getPassword())
+                passwordEncoder.encode(request.getPassword())
         );
 
-        user.setRole("CUSTOMER");
-
-        repository.save(user);
-
-        return user;
+        return userRepository.save(user);
     }
 
     public AuthResponse login(LoginRequest request) {
 
-        User user = repository.findByEmail(request.getEmail())
+        User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() ->
-                        new RuntimeException("User not found"));
+                        new RuntimeException("Invalid email or password")
+                );
 
-        if (!encoder.matches(
-                request.getPassword(),
-                user.getPassword()
-        )) {
-            throw new RuntimeException("Invalid Password");
+        // verify password
+        boolean passwordMatches =
+                passwordEncoder.matches(
+                        request.getPassword(),
+                        user.getPassword()
+                );
+
+        if (!passwordMatches) {
+            throw new RuntimeException("Invalid email or password");
         }
 
+        // generate JWT token
         String token =
-                jwtUtil.generateToken(user.getEmail());
+                jwtService.generateToken(user.getEmail());
 
-        AuthResponse response = new AuthResponse();
-
-        response.setToken(token);
-
-        return response;
+        return new AuthResponse(token);
     }
 
     public User getUserById(Long id) {
-        return repository.findById(id)
+
+        return userRepository.findById(id)
                 .orElseThrow(() ->
-                        new RuntimeException("User not found"));
+                        new RuntimeException("User not found")
+                );
     }
 }

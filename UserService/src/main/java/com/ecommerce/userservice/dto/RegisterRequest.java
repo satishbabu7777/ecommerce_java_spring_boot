@@ -2,10 +2,16 @@ package com.ecommerce.userservice.dto;
 
 public class RegisterRequest {
 
+    private String name;
     private String email;
     private String password;
 
-    public RegisterRequest() {
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getEmail() {
