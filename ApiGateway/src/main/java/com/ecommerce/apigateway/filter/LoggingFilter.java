@@ -3,7 +3,6 @@ package com.ecommerce.apigateway.filter;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.stereotype.Component;
-import reactor.core.publisher.Mono;
 
 @Component
 public class LoggingFilter implements GlobalFilter, Ordered {
