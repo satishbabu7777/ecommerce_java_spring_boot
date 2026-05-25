@@ -1,5 +1,6 @@
+
 server:
-  port: 8085
+  port: 8080
 
 spring:
   application:
@@ -12,7 +13,7 @@ spring:
         - id: USER-SERVICE
           uri: lb://USER-SERVICE
           predicates:
-            - Path=/users/**
+            - Path=/auth/**
 
         - id: PRODUCT-SERVICE
           uri: lb://PRODUCT-SERVICE
@@ -29,7 +30,51 @@ spring:
           predicates:
             - Path=/payments/**
 
+        - id: USER-SWAGGER
+          uri: lb://USER-SERVICE
+          predicates:
+            - Path=/v3/api-docs/users
+          filters:
+            - RewritePath=/v3/api-docs/users,/v3/api-docs
+
+        - id: PRODUCT-SWAGGER
+          uri: lb://PRODUCT-SERVICE
+          predicates:
+            - Path=/v3/api-docs/products
+          filters:
+            - RewritePath=/v3/api-docs/products,/v3/api-docs
+
+        - id: ORDER-SWAGGER
+          uri: lb://ORDER-SERVICE
+          predicates:
+            - Path=/v3/api-docs/orders
+          filters:
+            - RewritePath=/v3/api-docs/orders,/v3/api-docs
+
+        - id: PAYMENT-SWAGGER
+          uri: lb://PAYMENT-SERVICE
+          predicates:
+            - Path=/v3/api-docs/payments
+          filters:
+            - RewritePath=/v3/api-docs/payments,/v3/api-docs
+
 eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka/
+
+springdoc:
+  swagger-ui:
+    enabled: true
+    urls:
+      - name: USER SERVICE
+        url: /v3/api-docs/users
+
+      - name: PRODUCT SERVICE
+        url: /v3/api-docs/products
+
+      - name: ORDER SERVICE
+        url: /v3/api-docs/orders
+
+      - name: PAYMENT SERVICE
+        url: /v3/api-docs/payments

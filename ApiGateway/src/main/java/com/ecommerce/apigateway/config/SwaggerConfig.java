@@ -1,4 +1,4 @@
-package com.ecommerce.productservice.config;
+package com.ecommerce.apigateway.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
