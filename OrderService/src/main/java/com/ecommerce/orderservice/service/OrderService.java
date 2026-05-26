@@ -4,9 +4,13 @@ import com.ecommerce.orderservice.dto.OrderRequest;
 import com.ecommerce.orderservice.dto.ProductDto;
 import com.ecommerce.orderservice.dto.UserDto;
 import com.ecommerce.orderservice.entity.Order;
+import com.ecommerce.orderservice.feign.PaymentClient;
 import com.ecommerce.orderservice.feign.ProductClient;
 import com.ecommerce.orderservice.feign.UserClient;
 import com.ecommerce.orderservice.repository.OrderRepository;
+
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -17,17 +21,24 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final ProductClient productClient;
     private final UserClient userClient;
+    private final PaymentClient paymentClient;
 
     public OrderService(
             OrderRepository orderRepository,
             ProductClient productClient,
-            UserClient userClient
+            UserClient userClient,
+            PaymentClient paymentClient
     ) {
         this.orderRepository = orderRepository;
         this.productClient = productClient;
         this.userClient = userClient;
+        this.paymentClient = paymentClient;
     }
 
+    @CircuitBreaker(
+            name = "paymentService",
+            fallbackMethod = "paymentFallback"
+    )
     public Order placeOrder(OrderRequest request) {
 
         // Validate User
@@ -72,6 +83,52 @@ public class OrderService {
 
         order.setCreatedAt(LocalDateTime.now());
 
-        return orderRepository.save(order);
+        // Save Order
+        Order savedOrder =
+                orderRepository.save(order);
+
+        // CALL PAYMENT SERVICE
+        String paymentResponse =
+                paymentClient.createOrder(
+                        savedOrder.getTotalPrice()
+                );
+
+        System.out.println(paymentResponse);
+
+        return savedOrder;
+    }
+
+    // FALLBACK METHOD
+    public Order paymentFallback(
+            OrderRequest request,
+            Exception ex
+    ) {
+
+        System.out.println(
+                "Circuit Breaker Activated : "
+                        + ex.getMessage()
+        );
+
+        Order failedOrder = new Order();
+
+        failedOrder.setUserId(request.getUserId());
+
+        failedOrder.setProductId(
+                request.getProductId()
+        );
+
+        failedOrder.setQuantity(
+                request.getQuantity()
+        );
+
+        failedOrder.setStatus(
+                "PAYMENT_PENDING"
+        );
+
+        failedOrder.setCreatedAt(
+                LocalDateTime.now()
+        );
+
+        return failedOrder;
     }
 }

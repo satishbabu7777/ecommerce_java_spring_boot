@@ -21,4 +21,9 @@ public class OrderController {
     ) {
         return orderService.placeOrder(request);
     }
+
+    @GetMapping
+    public String test() {
+       return "Order Service Working";
+    }
 }
