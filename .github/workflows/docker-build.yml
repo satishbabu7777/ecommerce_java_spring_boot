@@ -6,17 +6,16 @@ on:
       - main
 
 jobs:
-
   docker:
     runs-on: ubuntu-latest
 
     steps:
 
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: '17'
           distribution: 'temurin'
@@ -31,7 +30,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build Docker Image
-        run: docker build -t satish/product-service .
+        run: docker build -t satishbabu7777/product-service:latest .
 
       - name: Push Docker Image
-        run: docker push satish/product-service
+        run: docker push satishbabu7777/product-service:latest
