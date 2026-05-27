@@ -1,14 +1,15 @@
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:17-jdk-alpine
 
 LABEL maintainer="Satish Babu"
 LABEL email="satishbabu7777@gmail.com"
 LABEL project="ecommerce-app"
+LABEL service="user-service"
 LABEL version="1.0"
 
 WORKDIR /app
 
-COPY target/demo-0.0.1-SNAPSHOT.jar app.jar
+COPY target/*.jar app.jar
 
-EXPOSE 8001
+EXPOSE 8081
 
 ENTRYPOINT ["java","-jar","app.jar"]
