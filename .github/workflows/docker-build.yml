@@ -9,6 +9,10 @@ jobs:
   docker:
     runs-on: ubuntu-latest
 
+    defaults:
+      run:
+        working-directory: product-service
+
     steps:
 
       - name: Checkout Code
